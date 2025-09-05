@@ -1,0 +1,10 @@
+{
+  "scripts": {
+    "build": "next build",
+    "dev": "next dev",
+    "dev:perf": "NODE_ENV=development next dev --turbo",
+    "analyze": "ANALYZE=true npm run build",
+    "lint": "next lint",
+    "start": "next start"
+  }
+}
