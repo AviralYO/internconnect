@@ -2,7 +2,6 @@
 
 import { Button } from "@/components/ui/button"
 import { Building2, GraduationCap, Users, Briefcase } from "lucide-react"
-import { SimpleThemeToggle } from "@/components/ui/simple-theme-toggle"
 import HyperspeedBackground from "@/components/ui/hyperspeed-background"
 import Link from "next/link"
 
@@ -17,11 +16,6 @@ export default function HomePage() {
       
       {/* Content Overlay */}
       <div className="relative z-10 container mx-auto px-4 py-12 min-h-screen flex flex-col justify-center">
-        {/* Header with Theme Toggle */}
-        <div className="flex justify-end mb-12">
-          <SimpleThemeToggle />
-        </div>
-        
         {/* Hero Section */}
         <div className="text-center mb-20 max-w-4xl mx-auto">
           <h1 className="text-6xl md:text-7xl font-bold mb-8 tracking-tight text-white" style={{ 
