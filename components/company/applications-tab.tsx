@@ -27,6 +27,10 @@ interface Application {
     university: string | null
     major: string | null
   }
+  resume?: {
+    file_name: string
+    file_url: string
+  }
 }
 
 interface ApplicationsTabProps {
@@ -46,7 +50,8 @@ export function ApplicationsTab({ companyId }: ApplicationsTabProps) {
         .select(`
           *,
           internship:internships(id, title),
-          student:students(id, first_name, last_name, email, university, major)
+          student:students(id, first_name, last_name, email, university, major),
+          resume:resumes(file_name, file_url)
         `)
         .in(
           "internship_id",
@@ -59,7 +64,7 @@ export function ApplicationsTab({ companyId }: ApplicationsTabProps) {
         .order("applied_at", { ascending: false })
 
       if (!error && data) {
-        setApplications(data as Application[])
+        setApplications(data as any)
       }
       setIsLoading(false)
     }
@@ -92,6 +97,8 @@ export function ApplicationsTab({ companyId }: ApplicationsTabProps) {
         return "secondary"
       case "accepted":
         return "default"
+      case "confirmed":
+        return "default"
       case "rejected":
         return "destructive"
       default:
@@ -119,6 +126,7 @@ export function ApplicationsTab({ companyId }: ApplicationsTabProps) {
             <SelectItem value="pending">Pending</SelectItem>
             <SelectItem value="reviewed">Reviewed</SelectItem>
             <SelectItem value="accepted">Accepted</SelectItem>
+            <SelectItem value="confirmed">Confirmed</SelectItem>
             <SelectItem value="rejected">Rejected</SelectItem>
           </SelectContent>
         </Select>
@@ -173,9 +181,9 @@ export function ApplicationsTab({ companyId }: ApplicationsTabProps) {
 
                 <div className="flex items-center justify-between">
                   <div className="flex gap-2">
-                    {application.resume_url && (
+                    {(application.resume?.file_url || application.resume_url) && (
                       <Button variant="outline" size="sm" asChild>
-                        <Link href={application.resume_url} target="_blank">
+                        <Link href={application.resume?.file_url || application.resume_url || "#"} target="_blank">
                           <FileText className="h-4 w-4 mr-1" />
                           View Resume
                         </Link>

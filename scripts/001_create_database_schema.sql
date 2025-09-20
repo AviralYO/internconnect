@@ -55,7 +55,7 @@ CREATE TABLE IF NOT EXISTS public.applications (
   student_id UUID NOT NULL REFERENCES public.students(id) ON DELETE CASCADE,
   cover_letter TEXT,
   resume_url TEXT,
-  status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'reviewed', 'accepted', 'rejected')),
+  status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'reviewed', 'accepted', 'rejected', 'confirmed')),
   applied_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   reviewed_at TIMESTAMP WITH TIME ZONE,
   UNIQUE(internship_id, student_id)

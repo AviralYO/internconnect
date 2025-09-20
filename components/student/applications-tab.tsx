@@ -33,6 +33,30 @@ export function ApplicationsTab({ studentId }: ApplicationsTabProps) {
   const [applications, setApplications] = useState<Application[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [statusFilter, setStatusFilter] = useState("all")
+  const [isConfirming, setIsConfirming] = useState<string | null>(null)
+
+  const confirmApplication = async (applicationId: string) => {
+    setIsConfirming(applicationId)
+    const supabase = createClient()
+    
+    const { error } = await supabase
+      .from("applications")
+      .update({ status: "confirmed" })
+      .eq("id", applicationId)
+      .eq("student_id", studentId)
+
+    if (!error) {
+      setApplications(prev => 
+        prev.map(app => 
+          app.id === applicationId 
+            ? { ...app, status: "confirmed" }
+            : app
+        )
+      )
+    }
+    
+    setIsConfirming(null)
+  }
 
   useEffect(() => {
     const fetchApplications = async () => {
@@ -70,6 +94,8 @@ export function ApplicationsTab({ studentId }: ApplicationsTabProps) {
         return "secondary"
       case "accepted":
         return "default"
+      case "confirmed":
+        return "default"
       case "rejected":
         return "destructive"
       default:
@@ -97,6 +123,7 @@ export function ApplicationsTab({ studentId }: ApplicationsTabProps) {
             <SelectItem value="pending">Pending</SelectItem>
             <SelectItem value="reviewed">Reviewed</SelectItem>
             <SelectItem value="accepted">Accepted</SelectItem>
+            <SelectItem value="confirmed">Confirmed</SelectItem>
             <SelectItem value="rejected">Rejected</SelectItem>
           </SelectContent>
         </Select>
@@ -152,6 +179,17 @@ export function ApplicationsTab({ studentId }: ApplicationsTabProps) {
                           <FileText className="h-4 w-4 mr-1" />
                           View Resume
                         </Link>
+                      </Button>
+                    )}
+                    
+                    {application.status === "accepted" && (
+                      <Button 
+                        size="sm" 
+                        onClick={() => confirmApplication(application.id)}
+                        disabled={isConfirming === application.id}
+                        className="bg-green-600 hover:bg-green-700"
+                      >
+                        {isConfirming === application.id ? "Confirming..." : "Accept Offer"}
                       </Button>
                     )}
                   </div>

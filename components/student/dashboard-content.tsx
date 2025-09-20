@@ -48,6 +48,8 @@ interface Stats {
   totalApplications: number
   pendingApplications: number
   acceptedApplications: number
+  confirmedApplications: number
+  rejectedApplications: number
   totalResumes: number
 }
 
@@ -62,6 +64,29 @@ export function StudentDashboardContent({ student, stats, applications }: Studen
   const router = useRouter()
   const supabase = createClient()
   const searchParams = useSearchParams()
+
+  // Calculate sophisticated progress:
+  // 0% = no applications 
+  // 25% = applications submitted (pending/reviewed)
+  // 50% = applications accepted by company 
+  // 100% = applications confirmed by student
+  const calculateProgress = () => {
+    if (stats.totalApplications === 0) return 0
+    
+    // Weight different statuses
+    const pendingWeight = 25
+    const acceptedWeight = 50
+    const confirmedWeight = 100
+    
+    const totalProgress = 
+      (stats.pendingApplications * pendingWeight) +
+      (stats.acceptedApplications * acceptedWeight) +
+      (stats.confirmedApplications * confirmedWeight)
+    
+    return Math.round(totalProgress / stats.totalApplications)
+  }
+
+  const progressValue = calculateProgress()
 
   // Check for tab parameter in URL and set initial tab
   useEffect(() => {
@@ -238,16 +263,11 @@ export function StudentDashboardContent({ student, stats, applications }: Studen
                 {/* Progress Bar */}
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm" style={{ color: 'var(--muted-foreground)' }}>
-                    <span>Progress</span>
-                    <span>
-                      {stats.totalApplications > 0 
-                        ? `${Math.round((stats.acceptedApplications / stats.totalApplications) * 100)}%`
-                        : '0%'
-                      }
-                    </span>
+                    <span>Application Progress</span>
+                    <span>{progressValue}%</span>
                   </div>
                   <Progress 
-                    value={stats.totalApplications > 0 ? (stats.acceptedApplications / stats.totalApplications) * 100 : 0}
+                    value={progressValue}
                     className="h-3 bg-gray-200"
                   />
                 </div>

@@ -176,7 +176,8 @@ export default function ApplyPage() {
         description: "Your application has been successfully submitted.",
       })
 
-      router.push(`/student/internships/${params.id}`)
+      // Redirect to main internships page instead of details page
+      router.push("/student/internships")
     } catch (error) {
       console.error("Application submission error:", error)
       toast({

@@ -39,6 +39,8 @@ export default async function StudentDashboardPage() {
     totalApplications: applications?.length || 0,
     pendingApplications: applications?.filter((a) => a.status === "pending").length || 0,
     acceptedApplications: applications?.filter((a) => a.status === "accepted").length || 0,
+    confirmedApplications: applications?.filter((a) => a.status === "confirmed").length || 0,
+    rejectedApplications: applications?.filter((a) => a.status === "rejected").length || 0,
     totalResumes: resumes?.length || 0,
   }
 
