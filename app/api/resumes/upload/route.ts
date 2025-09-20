@@ -1,5 +1,4 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { put } from "@vercel/blob"
 import { createClient } from "@/lib/supabase/server"
 
 export async function POST(request: NextRequest) {
@@ -33,11 +32,28 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    // Upload file to Vercel Blob
-    const filename = `resumes/${studentId}/${Date.now()}-${file.name}`
-    const blob = await put(filename, file, {
-      access: "public",
-    })
+    // Convert file to buffer for Supabase storage
+    const bytes = await file.arrayBuffer()
+    const buffer = Buffer.from(bytes)
+
+    // Upload file to Supabase Storage
+    const filename = `${studentId}/${Date.now()}-${file.name}`
+    const { data: uploadData, error: uploadError } = await supabase.storage
+      .from("resumes")
+      .upload(filename, buffer, {
+        contentType: file.type,
+        upsert: false,
+      })
+
+    if (uploadError) {
+      console.error("Storage upload error:", uploadError)
+      return NextResponse.json({ error: "Failed to upload file" }, { status: 500 })
+    }
+
+    // Get public URL
+    const { data: urlData } = supabase.storage
+      .from("resumes")
+      .getPublicUrl(filename)
 
     // Save resume record to database
     const { data: resume, error: dbError } = await supabase
@@ -45,7 +61,7 @@ export async function POST(request: NextRequest) {
       .insert({
         student_id: studentId,
         file_name: file.name,
-        file_url: blob.url,
+        file_url: urlData.publicUrl,
         file_size: file.size,
         is_primary: false, // Will be set manually by user
       })
@@ -53,6 +69,7 @@ export async function POST(request: NextRequest) {
       .single()
 
     if (dbError) {
+      console.error("Database error:", dbError)
       return NextResponse.json({ error: "Failed to save resume record" }, { status: 500 })
     }
 
