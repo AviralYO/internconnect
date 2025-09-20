@@ -143,6 +143,12 @@ export default function ApplyPage() {
     }
 
     setIsSubmitting(true)
+    console.log("Submitting application with data:", {
+      internship_id: params.id,
+      student_id: studentId,
+      resume_id: selectedResumeId,
+      cover_letter: coverLetter,
+    })
 
     try {
       const response = await fetch("/api/applications", {
@@ -158,8 +164,11 @@ export default function ApplyPage() {
         }),
       })
 
+      const result = await response.json()
+      console.log("API Response:", result)
+
       if (!response.ok) {
-        throw new Error("Failed to submit application")
+        throw new Error(result.error || "Failed to submit application")
       }
 
       toast({
@@ -169,9 +178,10 @@ export default function ApplyPage() {
 
       router.push(`/student/internships/${params.id}`)
     } catch (error) {
+      console.error("Application submission error:", error)
       toast({
         title: "Submission Failed",
-        description: "There was an error submitting your application. Please try again.",
+        description: error instanceof Error ? error.message : "There was an error submitting your application. Please try again.",
         variant: "destructive",
       })
     } finally {

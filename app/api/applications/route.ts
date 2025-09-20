@@ -4,8 +4,16 @@ import { createClient } from "@/lib/supabase/server"
 export async function POST(request: NextRequest) {
   try {
     const { internship_id, student_id, resume_id, cover_letter } = await request.json()
+    
+    console.log("Received application data:", {
+      internship_id,
+      student_id,
+      resume_id,
+      cover_letter: cover_letter ? "present" : "missing"
+    })
 
     if (!internship_id || !student_id || !resume_id || !cover_letter) {
+      console.log("Missing required fields")
       return NextResponse.json(
         { error: "Missing required fields" },
         { status: 400 }
@@ -100,11 +108,12 @@ export async function POST(request: NextRequest) {
     if (applicationError) {
       console.error("Application creation error:", applicationError)
       return NextResponse.json(
-        { error: "Failed to submit application" },
+        { error: "Failed to submit application", details: applicationError.message },
         { status: 500 }
       )
     }
 
+    console.log("Application created successfully:", application)
     return NextResponse.json({ 
       message: "Application submitted successfully",
       application 
