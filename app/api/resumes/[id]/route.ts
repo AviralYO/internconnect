@@ -1,5 +1,4 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { del } from "@vercel/blob"
 import { createClient } from "@/lib/supabase/server"
 
 export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -28,12 +27,25 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
       return NextResponse.json({ error: "Resume not found" }, { status: 404 })
     }
 
-    // Delete file from Vercel Blob
-    try {
-      await del(resume.file_url)
-    } catch (blobError) {
-      console.error("Failed to delete blob:", blobError)
-      // Continue with database deletion even if blob deletion fails
+    // Extract file path from URL for Supabase Storage deletion
+    // Assuming URL format: https://{project}.supabase.co/storage/v1/object/public/resumes/{filename}
+    const urlParts = resume.file_url.split('/storage/v1/object/public/resumes/')
+    if (urlParts.length === 2) {
+      const filePath = urlParts[1]
+      
+      // Delete file from Supabase Storage
+      try {
+        const { error: storageError } = await supabase.storage
+          .from("resumes")
+          .remove([filePath])
+        
+        if (storageError) {
+          console.error("Failed to delete from storage:", storageError)
+        }
+      } catch (storageError) {
+        console.error("Failed to delete storage file:", storageError)
+        // Continue with database deletion even if storage deletion fails
+      }
     }
 
     // Delete resume record from database
